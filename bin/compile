@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir> <env-dir>
+
+# Ensure wildcards in globs match dotfiles too.
+shopt -s dotglob
+
+set -o errexit    # always exit on error
+set -o pipefail   # don't ignore exit codes when piping output
+set -o nounset    # fail on unset variables
+
+BUILD_DIR=${1:-}
+CACHE_DIR=${2:-}
+ENV_DIR=${3:-}
+BUILD_PACK_DIR=$(cd $(dirname ${0:-}); cd ..; pwd)
+
+cd $BUILD_DIR
+
+source $BUILD_PACK_DIR/lib/copy_directories.sh
+
+# Check if BE_PROJECT_PATH, FE_PROJECT_PATH, and TARGET_PATH are defined
+if [ ! -f $ENV_DIR/BE_PROJECT_PATH ]; then
+  echo "BE_PROJECT_PATH is not defined"
+  exit 1
+fi
+
+if [ ! -f $ENV_DIR/FE_PROJECT_PATH ]; then
+  echo "FE_PROJECT_PATH is not defined"
+  exit 1
+fi
+
+if [ ! -f $ENV_DIR/TARGET_PATH ]; then
+  echo "TARGET_PATH is not defined"
+  exit 1
+fi
+
+# Define env variables
+BE_PROJECT_PATH=`cat $ENV_DIR/BE_PROJECT_PATH`
+FE_PROJECT_PATH=`cat $ENV_DIR/FE_PROJECT_PATH`
+TARGET_PATH=`cat $ENV_DIR/TARGET_PATH`
+
+move_dc_directories "$BUILD_DIR" "$CACHE_DIR" "$BUILD_DIR/$BE_PROJECT_PATH" "$BUILD_DIR/$FE_PROJECT_PATH" "$TARGET_PATH"
+
+
+
+
